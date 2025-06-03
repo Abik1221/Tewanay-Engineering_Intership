@@ -1,6 +1,9 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/abik1221/Tewanay-Engineering_Intership/controllers"
+	"github.com/gin-gonic/gin"
+)
 
 func MenuRoutes(r *gin.Engine) {
 	r.GET("/menus", controllers.GetMenus())
