@@ -3,11 +3,11 @@ package main
 import (
 	"os"
 
+	"github.com/abik1221/Tewanay-Engineering_Intership/database"
 	"github.com/abik1221/Tewanay-Engineering_Intership/middlewares"
 	"github.com/abik1221/Tewanay-Engineering_Intership/routes"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/abik1221/Tewanay-Engineering_Intership/database"
 )
 
 var foods *mongo.Collection = database.OpenCollection(database.Client, "food")
