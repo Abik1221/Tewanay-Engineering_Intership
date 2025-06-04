@@ -56,6 +56,7 @@ func GetOrder() gin.HandlerFunc {
 func CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var order models.Order
+		var table models.Table
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 		if err := c.BindJSON(&order); err != nil {
