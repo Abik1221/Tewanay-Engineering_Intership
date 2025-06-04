@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var validate = validator.New()
@@ -117,6 +119,8 @@ func CreateFood() gin.HandlerFunc {
 		food.ID = primitive.NewObjectID()
 		foodIdHex := food.ID.Hex()
 		food.Food_Id = &foodIdHex
+		var num = toFixed(*food.Food_Price, 2)
+		food.Food_Price = &num
 
 		menu.Created_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		menu.Updated_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
@@ -131,21 +135,117 @@ func CreateFood() gin.HandlerFunc {
 	}
 }
 func UpdateFood() gin.HandlerFunc {
-	return func(*gin.Context) {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var menu models.Menu
+
+		var food models.Food
+
+		food_Id := c.Param("food_id")
+
+		if err := c.BindJSON(&food); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		var UpdateObj primitive.D
+		if food.Food_Name != "" {
+			UpdateObj = append(UpdateObj, bson.E{Key: "food_name", Value: food.Food_Name})
+		}
+
+		if food.Food_Price != nil {
+			UpdateObj = append(UpdateObj, bson.E{Key: "food_price", Value: food.Food_Price})
+		}
+
+		if food.Food_Image != "" {
+			UpdateObj = append(UpdateObj, bson.E{Key: "food_image", Value: food.Food_Image})
+		}
+
+		if food.Menu_Id != nil {
+			err := menuCollection.FindOne(ctx, bson.M{"menu_id": food.Menu_Id}).Decode(&menu)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error": err.Error(),
+				},
+				)
+				return
+			}
+			UpdateObj = append(UpdateObj, bson.E{Key: "menu_id", Value: food.Menu_Id})
+		}
+
+		if food.Food_Description != "" {
+			UpdateObj = append(UpdateObj, bson.E{Key: "food_description", Value: food.Food_Description})
+		}
+
+		food.Updated_AT, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+
+		UpdateObj = append(UpdateObj, bson.E{Key: "updated_at", Value: food.Updated_AT})
+
+		upsert := true
+		filter := bson.M{"food_id": food_Id}
+
+		opt := options.UpdateOptions{
+			Upsert: &upsert,
+		}
+
+		result, err := foodCollection.UpdateOne(
+			ctx,
+			filter,
+			bson.D{{Key: "$set", Value: UpdateObj}},
+			&opt,
+		)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, result)
 
 	}
 }
 
 func DeleteFood() gin.HandlerFunc {
-	return func(*gin.Context) {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
 
+		food_Id := c.Param("food_id")
+
+		filter := bson.M{"food_id": food_Id}
+
+		result, err := foodCollection.DeleteOne(ctx, filter)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Error deleting food",
+			})
+			return
+		}
+
+		if result.DeletedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{
+				"message": "Food not found",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Food deleted successfully",
+		})
 	}
 }
 
 func round(num float64) int {
-	return 0
+	return int(num + math.Copysign(0.5, num))
 }
 
 func toFixed(num float64, precision int) float64 {
-	return 0
+	output := math.Pow(10, float64(precision))
+	return float64(int(num*output)) / output
 }
