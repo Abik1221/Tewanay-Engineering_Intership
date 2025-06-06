@@ -8,17 +8,40 @@ import (
 
 	"github.com/abik1221/Tewanay-Engineering_Intership/database"
 	"github.com/abik1221/Tewanay-Engineering_Intership/helpers"
+	"github.com/abik1221/Tewanay-Engineering_Intership/models"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var userCollection = database.OpenCollection(database.Client, "user")
 
 func GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(Context.Background(), 100*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+
 		defer cancel()
+
+		var users []models.User
+
+		results, err := userCollection.Find(ctx, bson.M{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer results.Close(ctx)
+
+		for results.Next(ctx) {
+			var user models.User
+			if err := results.Decode(&user); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			users = append(users, user)
+		}
+
+		c.JSON(http.StatusOK, users)
 	}
 }
 
@@ -34,7 +57,7 @@ func GetUser() gin.HandlerFunc {
 		err := userCollection.FindOne(ctx, bson.M{"user_id": userId}).Decode(&user)
 
 		if err != nil {
-			c.Json(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
 
 		c.JSON(http.StatusOK, user)
@@ -73,7 +96,7 @@ func Signup() gin.HandlerFunc {
 		}
 
 		password := HashPassward(user.Password)
-		user.Password = &password
+		user.Password = password
 
 		count, err = userCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
 		if err != nil {
@@ -85,14 +108,14 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
-		user.CreatedAt,_ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		user.CreatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
-		user.UpdatedAt,_ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+		user.UpdatedAt, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 
 		user.ID = primitive.NewObjectID()
-		user.user_id = user.ID.Hex()
+		user.User_id = user.ID.Hex()
 
-		token, refrest_tokens, _ := helpers.GenerateAllTokens(*user.Email, *user.First_Name, *user.Last_Name, user.user_id)
+		token, refrest_tokens, _ := helpers.GenerateAllTokens(user.Email, user.First_Name, user.Last_Name, user.User_id)
 		user.Token = &token
 		user.Refresh_Token = &refrest_tokens
 
@@ -133,14 +156,14 @@ func Login() gin.HandlerFunc {
 			return
 		}
 
-		PasswordIsValid := VerifyPassword(*user.Password, *Found_user.Password)
+		PasswordIsValid, _ := VerifyPassward(Found_user.Password, user.Password)
 		if !PasswordIsValid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
 
-		token, refresh_token, _ := helper.GenerateAllTokens(*Found_user.Email, *Found_user.First_Name, *Found_user.Last_Name, Found_user.user_id)
-		helper.UpdateAllTokens(token, refresh_token, Found_user.User_id)
+		token, refresh_token, _ := helpers.GenerateAllTokens(Found_user.Email, Found_user.First_Name, Found_user.Last_Name, Found_user.User_id)
+		helpers.UpdateAllTokens(token, refresh_token, Found_user.User_id)
 
 		Found_user.Token = &token
 		Found_user.Refresh_Token = &refresh_token
@@ -148,9 +171,8 @@ func Login() gin.HandlerFunc {
 		c.JSON(http.StatusOK, Found_user)
 	}
 }
-
 func HashPassward(User_Password string) string {
-	bytes, err := bycrypt.GenerateFromPassword([]byte(User_Password), 14)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(User_Password), 14)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -158,7 +180,7 @@ func HashPassward(User_Password string) string {
 }
 
 func VerifyPassward(Intered_password, hash string) (bool, string) {
-	err := bycrypt.CompareHashAndPassword([]byte(hash), []byte(Intered_password))
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(Intered_password))
 	if err != nil {
 		return false, "Invalid password"
 	}

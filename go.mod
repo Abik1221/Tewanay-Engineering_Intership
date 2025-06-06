@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.26.0
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	go.mongodb.org/mongo-driver v1.17.3
 )
 

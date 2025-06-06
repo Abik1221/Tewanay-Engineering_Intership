@@ -15,7 +15,7 @@ import (
 )
 
 var orderCollection = database.OpenCollection(database.Client, "order")
-
+var tableCollection = database.OpenCollection(database.Client, "table")
 func GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -57,6 +57,8 @@ func CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var order models.Order
 		var table models.Table
+
+		// to create an order related to the table we need to check if the table exists
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 		if err := c.BindJSON(&order); err != nil {
@@ -69,6 +71,21 @@ func CreateOrder() gin.HandlerFunc {
 		if validationErr := validate.Struct(order); validationErr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": validationErr.Error(),
+			})
+			return
+		}
+
+		if order.Table_Id == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Table ID is required",
+			})
+			return
+		}
+
+		err := tableCollection.FindOne(ctx, bson.M{"table_id": order.Table_Id}).Decode(&table)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Table not found",
 			})
 			return
 		}
