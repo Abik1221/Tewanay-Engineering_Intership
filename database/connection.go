@@ -12,7 +12,7 @@ import (
 )
 
 func DBinstance() *mongo.Client {
-	MongoDb := os.Getenv("MONGODB_URI")
+	MongoDb := os.Getenv("DATABASE_URL")
 	fmt.Println(MongoDb)
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoDb))
@@ -39,4 +39,3 @@ func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collecti
 	var collection *mongo.Collection = client.Database("Tewanay_Internship").Collection(collectionName)
 	return collection
 }
-
