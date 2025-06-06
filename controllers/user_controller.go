@@ -103,40 +103,41 @@ func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100 * time.Second)
 		defer cancel()
+		var Found_user models.User
 		var user models.User
-		if err := c.BindJSON(&user); err != nil {
+		if err := c.BindJSON(&Found_user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		validation_err := validate.Struct(user)
+		validation_err := validate.Struct(Found_user)
 		if validation_err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": validation_err.Error(),
 			})
 			return
 		}
-		err := userCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&user)
+		err := userCollection.FindOne(ctx, bson.M{"email": Found_user.Email}).Decode(&user)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
 
-		PasswordIsValid := VerifyPassword(user.Password, *user.Password)
+		PasswordIsValid := VerifyPassword(*user.Password, *Found_user.Password)
 		if !PasswordIsValid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 			return
 		}
 
-		token, refresh_token, _ := helper.GenerateAllTokens(*user.Email, *user.First_Name, *user.Last_Name, user.user_id)
-		helper.UpdateAllTokens(token, refresh_token, user.User_id)
+		token, refresh_token, _ := helper.GenerateAllTokens(*Found_user.Email, *Found_user.First_Name, *Found_user.Last_Name, Found_user.user_id)
+		helper.UpdateAllTokens(token, refresh_token, Found_user.User_id)
 
-		user.Token = &token
-		user.Refresh_Token = &refresh_token
+		Found_user.Token = &token
+		Found_user.Refresh_Token = &refresh_token
 
-		c.JSON(http.StatusOK, user)
+		c.JSON(http.StatusOK, Found_user)
 	}
 }
 
