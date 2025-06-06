@@ -20,6 +20,16 @@ import (
 var validate = validator.New()
 var foodCollection = database.OpenCollection(database.Client, "food")
 
+// @Summary      Get a single food item
+// @Description  Fetch food details by its unique ID
+// @Tags         foods
+// @Accept       json
+// @Produce      json
+// @Param        food_id  path  string  true  "Food ID"
+// @Success      200  {object}  models.Food
+// @Failure      404  {object}  object  "Food not found"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /foods/{food_id} [get]
 func GetFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -38,6 +48,17 @@ func GetFoods() gin.HandlerFunc {
 	}
 }
 
+// @Summary      List all foods (paginated)
+// @Description  Retrieve a paginated list of food items with optional query params
+// @Tags         foods
+// @Accept       json
+// @Produce      json
+// @Param        page          query  int     false  "Page number (default: 1)"
+// @Param        recordPerPage query  int     false  "Items per page (default: 10)"
+// @Param        startIndex    query  int     false  "Custom start index (overrides page)"
+// @Success      200  {object}  []bson.M
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /foods [get]
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -94,6 +115,16 @@ func GetFood() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Create a new food item
+// @Description  Add a new food entry to the database
+// @Tags         foods
+// @Accept       json
+// @Produce      json
+// @Param        request  body  models.Menu  true  "Food data (Note: Uses Menu model for binding)"
+// @Success      200  {object}  object  "MongoDB insert result"
+// @Failure      400  {object}  object  "Invalid input or validation error"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /foods [post]
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -134,6 +165,19 @@ func CreateFood() gin.HandlerFunc {
 		c.JSON(http.StatusOK, result)
 	}
 }
+
+// @Summary      Update a food item
+// @Description  Modify food details by ID (partial updates supported)
+// @Tags         foods
+// @Accept       json
+// @Produce      json
+// @Param        food_id  path  string       true  "Food ID to update"
+// @Param        request  body  models.Food  true  "Fields to update (all optional)"
+// @Success      200  {object}  object  "MongoDB update result"
+// @Failure      400  {object}  object  "Invalid input"
+// @Failure      404  {object}  object  "Menu ID not found"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /foods/{food_id} [patch]
 func UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -211,6 +255,16 @@ func UpdateFood() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Delete a food item
+// @Description  Remove a food entry by ID
+// @Tags         foods
+// @Accept       json
+// @Produce      json
+// @Param        food_id  path  string  true  "Food ID to delete"
+// @Success      200  {object}  object  "message: Food deleted successfully"
+// @Failure      404  {object}  object  "Food not found"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /foods/{food_id} [delete]
 func DeleteFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)

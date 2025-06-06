@@ -17,6 +17,14 @@ import (
 var orderCollection = database.OpenCollection(database.Client, "order")
 var tableCollection = database.OpenCollection(database.Client, "table")
 
+// @Summary      List all orders
+// @Description  Retrieve a list of all orders in the system
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   bson.M
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /orders [get]
 func GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -38,6 +46,17 @@ func GetOrders() gin.HandlerFunc {
 
 	}
 }
+
+// @Summary      Get an order by ID
+// @Description  Fetch a single order by its unique ID
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Param        order_id  path  string  true  "Order ID"
+// @Success      200  {object}  models.Order
+// @Failure      404  {object}  object  "Order not found"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /orders/{order_id} [get]
 func GetOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -54,6 +73,17 @@ func GetOrder() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Create a new order
+// @Description  Add a new order to the database (requires valid table_id)
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Param        request  body  models.Order  true  "Order data (must include table_id)"
+// @Success      200  {object}  object  "MongoDB insert result"
+// @Failure      400  {object}  object  "Invalid input or missing table_id"
+// @Failure      404  {object}  object  "Table not found"
+// @Failure      500  {object}  object  "Error creating order"
+// @Router       /orders [post]
 func CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var order models.Order
@@ -107,6 +137,17 @@ func CreateOrder() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Create a new order
+// @Description  Add a new order to the database (requires valid table_id)
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Param        request  body  models.Order  true  "Order data (must include table_id)"
+// @Success      200  {object}  object  "MongoDB insert result"
+// @Failure      400  {object}  object  "Invalid input or missing table_id"
+// @Failure      404  {object}  object  "Table not found"
+// @Failure      500  {object}  object  "Error creating order"
+// @Router       /orders [post]
 func UpdateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -156,6 +197,16 @@ func UpdateOrder() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Delete an order
+// @Description  Remove an order by ID
+// @Tags         orders
+// @Accept       json
+// @Produce      json
+// @Param        order_id  path  string  true  "Order ID to delete"
+// @Success      200  {object}  object  "MongoDB delete result"
+// @Failure      404  {object}  object  "Order not found"
+// @Failure      500  {object}  object  "Error deleting order"
+// @Router       /orders/{order_id} [delete]
 func DeleteOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)

@@ -17,6 +17,15 @@ import (
 
 var userCollection = database.OpenCollection(database.Client, "user")
 
+// GetUsers godoc
+// @Summary Get all users
+// @Description Retrieve a list of all users
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {array} models.User
+// @Failure 500 {object} object "Internal Server Error"
+// @Router /users [get]
 func GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -45,6 +54,17 @@ func GetUsers() gin.HandlerFunc {
 	}
 }
 
+// GetUser godoc
+// @Summary Get a single user
+// @Description Retrieve user details by user ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user_id path string true "User ID"
+// @Success 200 {object} models.User
+// @Failure 404 {object} object "User not found"
+// @Failure 500 {object} object "Internal Server Error"
+// @Router /users/{user_id} [get]
 func GetUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -64,6 +84,18 @@ func GetUser() gin.HandlerFunc {
 	}
 }
 
+// Signup godoc
+// @Summary Register a new user
+// @Description Create a new user account
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User registration data"
+// @Success 200 {object} object "Registration result"
+// @Failure 400 {object} object "Invalid input"
+// @Failure 409 {object} object "Email or phone already exists"
+// @Failure 500 {object} object "Internal Server Error"
+// @Router /signup [post]
 func Signup() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -130,6 +162,18 @@ func Signup() gin.HandlerFunc {
 	}
 }
 
+// Login godoc
+// @Summary User login
+// @Description Authenticate user and return access tokens
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Param credentials body models.User true "Login credentials (email and password)"
+// @Success 200 {object} models.User "Returns user with tokens"
+// @Failure 400 {object} object "Invalid input"
+// @Failure 401 {object} object "Invalid credentials"
+// @Failure 500 {object} object "Internal Server Error"
+// @Router /login [post]
 func Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -171,6 +215,13 @@ func Login() gin.HandlerFunc {
 		c.JSON(http.StatusOK, Found_user)
 	}
 }
+
+// HashPassward godoc
+// @Summary Hash password
+// @Description Internal function to hash passwords (not exposed via API)
+// @Tags internal
+// @Param User_Password path string true "Password to hash"
+// @Success 200 {string} string "Hashed password"
 func HashPassward(User_Password string) string {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(User_Password), 14)
 	if err != nil {
@@ -179,6 +230,13 @@ func HashPassward(User_Password string) string {
 	return string(bytes)
 }
 
+// VerifyPassward godoc
+// @Summary Verify password
+// @Description Internal function to verify passwords (not exposed via API)
+// @Tags internal
+// @Param Intered_password path string true "Password to verify"
+// @Param hash path string true "Hash to compare against"
+// @Success 200 {boolean} boolean "Password verification result"
 func VerifyPassward(Intered_password, hash string) (bool, string) {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(Intered_password))
 	if err != nil {

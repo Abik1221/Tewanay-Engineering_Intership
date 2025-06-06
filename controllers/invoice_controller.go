@@ -14,6 +14,14 @@ import (
 
 var invoiceCollection = database.OpenCollection(database.Client, "invoices")
 
+// @Summary      List all invoices
+// @Description  Retrieve a list of all invoices in the system
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.Invoice
+// @Failure      500  {object}  object  "Invoices not found or server error"
+// @Router       /invoices [get]
 func GetInvoices() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -42,7 +50,16 @@ func GetInvoices() gin.HandlerFunc {
 
 	}
 }
-
+// @Summary      Get an invoice by ID
+// @Description  Fetch a single invoice by its unique ID
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        invoice_id  path  string  true  "Invoice ID"
+// @Success      200  {object}  models.Invoice
+// @Failure      404  {object}  object  "Invoice not found"
+// @Failure      500  {object}  object  "Server error"
+// @Router       /invoices/{invoice_id} [get]
 func GetInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -58,6 +75,16 @@ func GetInvoice() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Create a new invoice
+// @Description  Add a new invoice to the database
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        request  body  models.Invoice  true  "Invoice data"
+// @Success      200  {object}  object  "MongoDB insert result"
+// @Failure      400  {object}  object  "Invalid input or validation error"
+// @Failure      500  {object}  object  "Error creating invoice"
+// @Router       /invoices [post]
 func CreateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -83,6 +110,17 @@ func CreateInvoice() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Update an invoice
+// @Description  Modify an existing invoice by ID (full update)
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        invoice_id  path  string          true  "Invoice ID to update"
+// @Param        request     body  models.Invoice  true  "Updated invoice data"
+// @Success      200  {object}  object  "MongoDB update result"
+// @Failure      400  {object}  object  "Invalid input"
+// @Failure      500  {object}  object  "Error updating invoice"
+// @Router       /invoices/{invoice_id} [put]
 func UpdateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -107,6 +145,15 @@ func UpdateInvoice() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Delete an invoice
+// @Description  Remove an invoice by ID
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        invoice_id  path  string  true  "Invoice ID to delete"
+// @Success      200  {object}  object  "MongoDB delete result"
+// @Failure      500  {object}  object  "Error deleting invoice"
+// @Router       /invoices/{invoice_id} [delete]
 func DeleteInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)

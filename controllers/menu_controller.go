@@ -16,6 +16,16 @@ import (
 
 var menuCollection = database.OpenCollection(database.Client, "menu")
 
+// @Summary      Get a menu by ID
+// @Description  Fetch a single menu by its unique ID
+// @Tags         menus
+// @Accept       json
+// @Produce      json
+// @Param        menu_id  path  string  true  "Menu ID"
+// @Success      200  {object}  models.Menu
+// @Failure      404  {object}  object  "Menu not found"
+// @Failure      500  {object}  object  "Internal server error"
+// @Router       /menus/{menu_id} [get]
 func GetMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -32,6 +42,14 @@ func GetMenu() gin.HandlerFunc {
 	}
 }
 
+// @Summary      List all menus
+// @Description  Retrieve a list of all available menus
+// @Tags         menus
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   bson.M
+// @Failure      500  {object}  object  "Failed to fetch menus"
+// @Router       /menus [get]
 func GetMenus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -50,6 +68,16 @@ func GetMenus() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Create a new menu
+// @Description  Add a new menu to the database
+// @Tags         menus
+// @Accept       json
+// @Produce      json
+// @Param        request  body  models.Menu  true  "Menu data"
+// @Success      200  {object}  object  "MongoDB insert result"
+// @Failure      400  {object}  object  "Invalid input or validation error"
+// @Failure      500  {object}  object  "Error creating menu"
+// @Router       /menus [post]
 func CreateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var menu models.Menu
@@ -86,6 +114,17 @@ func CreateMenu() gin.HandlerFunc {
 	}
 }
 
+// @Summary      Update a menu
+// @Description  Modify an existing menu by ID (partial updates supported)
+// @Tags         menus
+// @Accept       json
+// @Produce      json
+// @Param        menu_id  path  string       true  "Menu ID to update"
+// @Param        request  body  models.Menu  true  "Fields to update (all optional)"
+// @Success      200  {object}  object  "MongoDB update result"
+// @Failure      400  {object}  object  "Invalid date range or input"
+// @Failure      500  {object}  object  "Error updating menu"
+// @Router       /menus/{menu_id} [patch]
 func UpdateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -159,6 +198,16 @@ func inTimeSpan(start, end, now time.Time) bool {
 	return start.After(time.Now()) && end.After(start)
 }
 
+// @Summary      Delete a menu
+// @Description  Remove a menu by ID
+// @Tags         menus
+// @Accept       json
+// @Produce      json
+// @Param        menu_id  path  string  true  "Menu ID to delete"
+// @Success      200  {object}  object  "message: Menu deleted successfully"
+// @Failure      404  {object}  object  "Menu not found"
+// @Failure      500  {object}  object  "Error deleting menu"
+// @Router       /menus/{menu_id} [delete]
 func DeleteMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
