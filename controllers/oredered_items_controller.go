@@ -15,6 +15,16 @@ import (
 
 var orderItemCollection *mongo.Collection = database.OpenCollection(database.Client, "order_items")
 
+// GetOrderItems godoc
+// @Summary      Get all order items
+// @Description  Retrieve all order items from the database
+// @Tags         OrderItems
+// @Produce      json
+// @Success      200  {array}   primitive.M
+// @Failure      404  {object}  gin.H{"message": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order_items [get]
+
 func GetOrderItems() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -32,6 +42,17 @@ func GetOrderItems() gin.HandlerFunc {
 	}
 }
 
+// GetOrderItem godoc
+// @Summary      Get order item by ID
+// @Description  Retrieve a single order item by its order_item_id
+// @Tags         OrderItems
+// @Produce      json
+// @Param        order_item_id   path      string  true  "Order Item ID"
+// @Success      200  {object}  primitive.M
+// @Failure      404  {object}  gin.H{"error": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order_items/{order_item_id} [get]
+
 func GetOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -46,6 +67,17 @@ func GetOrderItem() gin.HandlerFunc {
 		c.JSON(http.StatusOK, orderItem)
 	}
 }
+
+// GetOrderItemsByOrderId godoc
+// @Summary      Get order items by Order ID
+// @Description  Retrieve all order items related to a specific order ID
+// @Tags         OrderItems
+// @Produce      json
+// @Param        order_id   path      string  true  "Order ID"
+// @Success      200  {array}   primitive.M
+// @Failure      404  {object}  gin.H{"message": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order/{order_id}/order_items [get]
 
 func GetOrderItemsByOrderId() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -63,6 +95,18 @@ func GetOrderItemsByOrderId() gin.HandlerFunc {
 		c.JSON(http.StatusOK, orederItems)
 	}
 }
+
+// CreateOrderItem godoc
+// @Summary      Create new order item
+// @Description  Create a new order item with JSON input
+// @Tags         OrderItems
+// @Accept       json
+// @Produce      json
+// @Param        order_item  body      models.Ordered_Item  true  "Order Item Data"
+// @Success      200  {object}  mongo.InsertOneResult
+// @Failure      400  {object}  gin.H{"error": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order_items [post]
 
 func CreateOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -85,6 +129,20 @@ func CreateOrderItem() gin.HandlerFunc {
 		c.JSON(http.StatusOK, result)
 	}
 }
+
+// UpdateOrderItem godoc
+// @Summary      Update an order item
+// @Description  Update order item fields by order_item_id
+// @Tags         OrderItems
+// @Accept       json
+// @Produce      json
+// @Param        order_item_id  path      string  true  "Order Item ID"
+// @Param        order_item     body      models.Ordered_Item  true  "Updated Order Item Data"
+// @Success      200  {object}  mongo.UpdateResult
+// @Failure      400  {object}  gin.H{"error": string}
+// @Failure      404  {object}  gin.H{"message": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order_items/{order_item_id} [put]
 
 func UpdateOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -111,6 +169,17 @@ func UpdateOrderItem() gin.HandlerFunc {
 		c.JSON(http.StatusOK, result)
 	}
 }
+
+// DeleteOrderItem godoc
+// @Summary      Delete an order item
+// @Description  Delete order item by order_item_id
+// @Tags         OrderItems
+// @Produce      json
+// @Param        order_item_id  path      string  true  "Order Item ID"
+// @Success      200  {object}  gin.H{"message": string}
+// @Failure      404  {object}  gin.H{"error": string}
+// @Failure      500  {object}  gin.H{"error": string}
+// @Router       /order_items/{order_item_id} [delete]
 
 func DeleteOrderItem() gin.HandlerFunc {
 	return func(c *gin.Context) {

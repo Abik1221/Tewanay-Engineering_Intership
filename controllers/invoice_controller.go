@@ -14,6 +14,14 @@ import (
 
 var invoiceCollection = database.OpenCollection(database.Client, "invoices")
 
+// GetInvoices godoc
+// @Summary      Get all invoices
+// @Description  Retrieves a list of all invoices from the database
+// @Tags         invoices
+// @Produce      json
+// @Success      200  {array}   models.Invoice
+// @Failure      500  {object}  gin.H{"error": "Invoices not found"}
+// @Router       /invoices [get]
 func GetInvoices() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -43,6 +51,15 @@ func GetInvoices() gin.HandlerFunc {
 	}
 }
 
+// GetInvoice godoc
+// @Summary      Get an invoice by ID
+// @Description  Retrieves a single invoice by its invoice_id
+// @Tags         invoices
+// @Produce      json
+// @Param        invoice_id  path      string  true  "Invoice ID"
+// @Success      200         {object}  models.Invoice
+// @Failure      500         {object}  gin.H{"error": "Invoice not found"}
+// @Router       /invoices/{invoice_id} [get]
 func GetInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -58,6 +75,17 @@ func GetInvoice() gin.HandlerFunc {
 	}
 }
 
+// CreateInvoice godoc
+// @Summary      Create a new invoice
+// @Description  Creates a new invoice document in the database
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        invoice  body      models.Invoice  true  "Invoice data"
+// @Success      200      {object}  primitive.InsertOneResult
+// @Failure      400      {object}  gin.H{"error": "Invalid input"}
+// @Failure      500      {object}  gin.H{"error": "Error creating invoice"}
+// @Router       /invoices [post]
 func CreateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -74,15 +102,27 @@ func CreateInvoice() gin.HandlerFunc {
 		invoice.Invoice_Id = primitive.NewObjectID().Hex()
 		invoice.Created_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		invoice.Updated_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-		sucess, err := invoiceCollection.InsertOne(ctx, invoice)
+		success, err := invoiceCollection.InsertOne(ctx, invoice)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating invoice"})
 			return
 		}
-		c.JSON(http.StatusOK, sucess)
+		c.JSON(http.StatusOK, success)
 	}
 }
 
+// UpdateInvoice godoc
+// @Summary      Update an invoice by ID
+// @Description  Updates an existing invoice's data by invoice_id
+// @Tags         invoices
+// @Accept       json
+// @Produce      json
+// @Param        invoice_id  path      string         true  "Invoice ID"
+// @Param        invoice     body      models.Invoice  true  "Updated invoice data"
+// @Success      200        {object}  mongo.UpdateResult
+// @Failure      400        {object}  gin.H{"error": "Invalid input"}
+// @Failure      500        {object}  gin.H{"error": "Error updating invoice"}
+// @Router       /invoices/{invoice_id} [put]
 func UpdateInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -107,6 +147,15 @@ func UpdateInvoice() gin.HandlerFunc {
 	}
 }
 
+// DeleteInvoice godoc
+// @Summary      Delete an invoice by ID
+// @Description  Deletes an invoice document from the database by invoice_id
+// @Tags         invoices
+// @Produce      json
+// @Param        invoice_id  path      string  true  "Invoice ID"
+// @Success      200         {object}  mongo.DeleteResult
+// @Failure      500         {object}  gin.H{"error": "Error deleting invoice"}
+// @Router       /invoices/{invoice_id} [delete]
 func DeleteInvoice() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)

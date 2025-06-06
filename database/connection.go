@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,7 +11,7 @@ import (
 )
 
 func DBinstance() *mongo.Client {
-	MongoDb := os.Getenv("MONGODB_URI")
+	MongoDb := "mongodb://localhost:27017"
 	fmt.Println(MongoDb)
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(MongoDb))

@@ -16,6 +16,16 @@ import (
 
 var menuCollection = database.OpenCollection(database.Client, "menu")
 
+// GetMenu godoc
+// @Summary Get a menu by ID
+// @Description Get details of a menu by its menu_id
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Param menu_id path string true "Menu ID"
+// @Success 200 {object} models.Menu
+// @Failure 500 {object} gin.H{"error": string}
+// @Router /menus/{menu_id} [get]
 func GetMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -32,6 +42,15 @@ func GetMenu() gin.HandlerFunc {
 	}
 }
 
+// GetMenus godoc
+// @Summary Get all menus
+// @Description Retrieve a list of all menus
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Success 200 {array} bson.M
+// @Failure 500 {object} gin.H{"error": string}
+// @Router /menus [get]
 func GetMenus() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -50,6 +69,17 @@ func GetMenus() gin.HandlerFunc {
 	}
 }
 
+// CreateMenu godoc
+// @Summary Create a new menu
+// @Description Create a new menu with JSON payload
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Param menu body models.Menu true "Menu data"
+// @Success 200 {object} primitive.InsertOneResult
+// @Failure 400 {object} gin.H{"error": string}
+// @Failure 500 {object} gin.H{"error": string}
+// @Router /menus [post]
 func CreateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var menu models.Menu
@@ -86,6 +116,18 @@ func CreateMenu() gin.HandlerFunc {
 	}
 }
 
+// UpdateMenu godoc
+// @Summary Update a menu by ID
+// @Description Update menu fields by menu_id with JSON payload
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Param menu_id path string true "Menu ID"
+// @Param menu body models.Menu true "Menu data"
+// @Success 200 {object} mongo.UpdateResult
+// @Failure 400 {object} gin.H{"error": string}
+// @Failure 500 {object} gin.H{"error": string}
+// @Router /menus/{menu_id} [put]
 func UpdateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -159,6 +201,17 @@ func inTimeSpan(start, end, now time.Time) bool {
 	return start.After(time.Now()) && end.After(start)
 }
 
+// DeleteMenu godoc
+// @Summary Delete a menu by ID
+// @Description Delete a menu using menu_id
+// @Tags menu
+// @Accept json
+// @Produce json
+// @Param menu_id path string true "Menu ID"
+// @Success 200 {object} gin.H{"message": string}
+// @Failure 404 {object} gin.H{"error": string}
+// @Failure 500 {object} gin.H{"error": string}
+// @Router /menus/{menu_id} [delete]
 func DeleteMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
