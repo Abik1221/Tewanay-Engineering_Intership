@@ -160,7 +160,21 @@ func inTimeSpan(start, end, now time.Time) bool {
 }
 
 func DeleteMenu() gin.HandlerFunc {
-	return func(*gin.Context) {
-
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+		menu_id := c.Param("menu_id")
+		filter := bson.M{"menu_id": menu_id}
+		result, err := menuCollection.DeleteOne(ctx, filter)
+		if err != nil {
+			log.Println("Error deleting menu:", err)
+			return
+		}
+		if result.DeletedCount == 0 {
+			log.Println("No menu found with the given ID")
+			return
+		}
+		log.Println("Menu deleted successfully")
+		c.JSON(http.StatusOK, gin.H{"message": "Menu deleted successfully"})
 	}
 }
