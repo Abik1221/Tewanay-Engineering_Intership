@@ -39,3 +39,4 @@ func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collecti
 	var collection *mongo.Collection = client.Database("Tewanay_Internship").Collection(collectionName)
 	return collection
 }
+
