@@ -20,16 +20,6 @@ import (
 var validate = validator.New()
 var foodCollection = database.OpenCollection(database.Client, "food")
 
-// GetFoods godoc
-// @Summary Get a food by ID
-// @Description Get a single food item by food_id
-// @Tags foods
-// @Accept json
-// @Produce json
-// @Param food_id path string true "Food ID"
-// @Success 200 {object} models.Food
-// @Failure 500 {object}
-// @Router /foods/{food_id} [get]
 func GetFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -48,17 +38,6 @@ func GetFoods() gin.HandlerFunc {
 	}
 }
 
-// GetFood godoc
-// @Summary List foods with pagination
-// @Description Get paginated list of foods, supports recordPerPage and page query params
-// @Tags foods
-// @Accept json
-// @Produce json
-// @Param recordPerPage query int false "Records per page" default(10)
-// @Param page query int false "Page number" default(1)
-// @Success 200 {object} []bson.M
-// @Failure 500 {object}
-// @Router /foods [get]
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -75,12 +54,7 @@ func GetFood() gin.HandlerFunc {
 		}
 
 		startIndex := (page - 1) * recordPerPage
-		if param := c.Query("startIndex"); param != "" {
-			startIndex, err = strconv.Atoi(param)
-			if err != nil || startIndex < 0 {
-				startIndex = 0
-			}
-		}
+		startIndex, err = strconv.Atoi(c.Query("startIndex"))
 		matchStage := bson.D{{Key: "$match", Value: bson.D{}}}
 		groupStage := bson.D{
 			{Key: "$group", Value: bson.D{
@@ -120,17 +94,6 @@ func GetFood() gin.HandlerFunc {
 	}
 }
 
-// CreateFood godoc
-// @Summary Create a new food
-// @Description Create a new food item
-// @Tags foods
-// @Accept json
-// @Produce json
-// @Param food body models.Food true "Food data"
-// @Success 200 {object} mongo.InsertOneResult
-// @Failure 400 {object}
-// @Failure 500 {object}
-// @Router /foods [post]
 func CreateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
@@ -171,25 +134,13 @@ func CreateFood() gin.HandlerFunc {
 		c.JSON(http.StatusOK, result)
 	}
 }
-
-// UpdateFood godoc
-// @Summary Update a food
-// @Description Update food fields by food_id
-// @Tags foods
-// @Accept json
-// @Produce json
-// @Param food_id path string true "Food ID"
-// @Param food body models.Food true "Updated food data"
-// @Success 200 {object} mongo.UpdateResult
-// @Failure 400 {object}
-// @Failure 500 {object}
-// @Router /foods/{food_id} [put]
 func UpdateFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
 		var menu models.Menu
+
 		var food models.Food
 
 		food_Id := c.Param("food_id")
@@ -219,7 +170,8 @@ func UpdateFood() gin.HandlerFunc {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"error": err.Error(),
-				})
+				},
+				)
 				return
 			}
 			UpdateObj = append(UpdateObj, bson.E{Key: "menu_id", Value: food.Menu_Id})
@@ -259,17 +211,6 @@ func UpdateFood() gin.HandlerFunc {
 	}
 }
 
-// DeleteFood godoc
-// @Summary Delete a food
-// @Description Delete a food item by food_id
-// @Tags foods
-// @Accept json
-// @Produce json
-// @Param food_id path string true "Food ID"
-// @Success 200 {object}
-// @Failure 404 {object}
-// @Failure 500 {object}
-// @Router /foods/{food_id} [delete]
 func DeleteFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)

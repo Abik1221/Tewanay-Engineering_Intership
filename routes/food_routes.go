@@ -1,9 +1,8 @@
 package routes
 
-import
-(
- "github.com/gin-gonic/gin"
- "github.com/abik1221/Tewanay-Engineering_Intership/controllers"
+import (
+	"github.com/abik1221/Tewanay-Engineering_Intership/controllers"
+	"github.com/gin-gonic/gin"
 )
 
 func FoodRoutes(r *gin.Engine) {
